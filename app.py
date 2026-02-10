@@ -3,16 +3,13 @@ import logging
 from datetime import datetime
 
 import pandas
-import requests
-from dotenv import load_dotenv
+# import requests
+# from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-
-
-from updates import Updates
-
 
 logging.basicConfig(
     handlers=[logging.FileHandler('app.log'), logging.StreamHandler()],
@@ -21,15 +18,6 @@ logging.basicConfig(
     datefmt='%d/%m/%Y - %H:%M:%S',
     level=logging.INFO
 )
-
-
-def scroll_to_element(driver, element):
-    x = element.location['x']
-    y = element.location['y']
-    scroll_by_coord = f'window.scrollTo({x},{y});'
-    scroll_nav_out_of_way = 'window.scrollBy(0, -120);'
-    driver.execute_script(scroll_by_coord)
-    driver.execute_script(scroll_nav_out_of_way)
 
 
 def init_driver():
@@ -48,90 +36,50 @@ def init_driver():
     return driver
 
 
-def has_publication(driver):
-    try:
-        driver.get('https://www.imprensaoficial.com.br')
-        txt_publication = driver.find_element(By.CSS_SELECTOR, '#txtError').get_attribute('style')
+def process_edicts(driver, row, message):
+    driver.get('https://www.doe.sp.gov.br/')
 
-        return True if txt_publication.find('hidden') != -1 else False
+    input_search = '#search-input'
+    btn_search = 'button.MuiButtonBase-root:nth-child(2)'
+    txt_entry = '.css-8atqhb > div:nth-child(3)'
 
-    except Exception:
-        return False
-
-
-def process_edicts(driver, row):
-    input_search = '#content_txtPalavrasChave'
-    btn_search = '#content_btnBuscar'
-    btn_order = '#content_lnkOrderByData'
-    txt_entry = 'div.card:nth-child(4) > div:nth-child(1) > a:nth-child(1)'
-
-    driver.get('https://www.imprensaoficial.com.br')
-    driver.add_cookie({"name": "PortalIOJoyRide", "value": "ridden"})
-
-    driver.find_element(By.CSS_SELECTOR, input_search).send_keys(f'\"nº {row["EDITAL"]}\"')
+    driver.find_element(By.CSS_SELECTOR, input_search).send_keys(
+        f'{row['EDITAL']}')
     driver.find_element(By.CSS_SELECTOR, btn_search).click()
 
-    if os.path.exists('/usr/bin/firefox'):
-        scroll_to_element(driver, driver.find_element(By.CSS_SELECTOR, btn_order))
-
-    driver.find_element(By.CSS_SELECTOR, btn_order).click()
-    entry_link = driver.find_element(By.CSS_SELECTOR, txt_entry)
-
-    entry_date = entry_link.get_attribute('textContent').strip()
-    entry_date = entry_date.split('-')
-    row['ULTIMA AT'] = entry_date[0].strip()
-    row['LINK'] = entry_link.get_attribute('href').strip()
-
-
-def send_no_publication(id, date):
-    message = f'📭 <b>SEM PUBLICAÇÃO NO DIÁRIO OFICIAL</b>\n\nNão foram encontradas publicações em {date}\n\n<i>Mais atualizações amanhã!</i>'
-    url = f"https://api.telegram.org/bot{os.getenv('BOT-TOKEN')}/sendMessage?chat_id={id}&parse_mode=html&text={message}"
-    requests.get(url).json()
+    if driver.find_elements(By.CSS_SELECTOR, txt_entry):
+        abas_antes = driver.window_handles
+        driver.find_element(By.CSS_SELECTOR, txt_entry).click()
+        wait.until(lambda d: len(d.window_handles) > len(abas_antes))
+        nova_aba = list(set(driver.window_handles) - set(abas_antes))[0]
+        driver.switch_to.window(nova_aba)
+        row['ULTIMA AT'] = datetime.today().strftime('%d/%m/%Y')
+        row['LINK'] = driver.current_url
+        return f'{row['EDITAL']}\n'
+    else:
+        return ''
 
 
-def send_updates(id, updated):
-    message = f'{updated}\n\n<i>Mais atualizações amanhã!</i>'
-    url = f"https://api.telegram.org/bot{os.getenv('BOT-TOKEN')}/sendMessage?chat_id={id}&parse_mode=html&text={message}"
-    requests.get(url).json()
+try:
+    spreadsheet = pandas.read_csv(
+        f'./editais.csv',
+        dtype=str
+    )
+    driver = init_driver()
+    wait = WebDriverWait(driver, 10)
+    message = 'EDITAIS COM ATUALIZAÇÕES\n'
 
+    for index, row in spreadsheet.iterrows():
+        message += process_edicts(driver, row, message)
 
-def scrap_routine(person, id):
-    try:
-        driver = init_driver()
-        today = datetime.today().strftime('%d/%m/%Y')
+    if message != 'EDITAIS COM ATUALIZAÇÕES\n':
+        print(message.strip())
+    else:
+        print('Não houveram atualizações nos editais cadastrados.')
 
-        if has_publication(driver):
-            message = f'🎯 <b>EDITAIS COM ATUALIZAÇÃO EM {today}</b>'
+    spreadsheet.to_csv(f'./editais.csv', index=False)
+    driver.quit()    
 
-            spreadsheet = pandas.read_csv(
-                f'./editais-{person.lower()}.csv',
-                dtype=str
-            )
-
-            for index, row in spreadsheet.iterrows():
-                process_edicts(driver, row)
-                if row["ULTIMA AT"] == today:
-                    message += f'''\n<b>{row['EDITAL']}</b> | <i>{row['MATERIA']}</i>'''
-
-            if message.find('|') == -1:
-                message = f'⏳ <b>EDITAIS SEM ATUALIZAÇÃO EM {today}</b>\n\n<i>Não houveram atualizações nos editais cadastrados :(</i>'
-
-            spreadsheet.to_csv(f'./editais-{person.lower()}.csv', index=False)
-            send_updates(id, message)
-
-        else:
-            send_no_publication(id, today)
-
-        logging.info(f'{person.upper()}: OK')
-
-    except Exception as error:
-        logging.critical(f'{person.upper()}: {error}')
-
-    finally:
-        driver.quit()
-
-
-load_dotenv()
-Updates.get_updates(os.getenv('BOT-TOKEN'))
-scrap_routine('gustavo', os.getenv('ID-GUSTAVO'))
-scrap_routine('ana', os.getenv('ID-ANA'))
+except Exception as e:
+    driver.quit()
+    logging.error(e)
