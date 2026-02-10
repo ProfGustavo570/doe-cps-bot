@@ -3,13 +3,14 @@ import logging
 from datetime import datetime
 
 import pandas
-# import requests
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+
+import telegram
+
 
 logging.basicConfig(
     handlers=[logging.FileHandler('app.log'), logging.StreamHandler()],
@@ -36,7 +37,7 @@ def init_driver():
     return driver
 
 
-def process_edicts(driver, row, message):
+def process_edicts(driver, row):
     driver.get('https://www.doe.sp.gov.br/')
 
     input_search = '#search-input'
@@ -50,36 +51,45 @@ def process_edicts(driver, row, message):
     if driver.find_elements(By.CSS_SELECTOR, txt_entry):
         abas_antes = driver.window_handles
         driver.find_element(By.CSS_SELECTOR, txt_entry).click()
-        wait.until(lambda d: len(d.window_handles) > len(abas_antes))
         nova_aba = list(set(driver.window_handles) - set(abas_antes))[0]
         driver.switch_to.window(nova_aba)
-        row['ULTIMA AT'] = datetime.today().strftime('%d/%m/%Y')
+        row['ULTIMA_AT'] = datetime.today().strftime('%d/%m/%Y')
         row['LINK'] = driver.current_url
-        return f'{row['EDITAL']}\n'
+        return f'\n<b>{row['EDITAL']}</b> | <i>{row['MATERIA']}</i>'
     else:
         return ''
 
 
-try:
-    spreadsheet = pandas.read_csv(
-        f'./editais.csv',
-        dtype=str
-    )
-    driver = init_driver()
-    wait = WebDriverWait(driver, 10)
-    message = 'EDITAIS COM ATUALIZAÇÕES\n'
+def scrap_routine(id):
+    try:
+        driver = init_driver()
+        today = datetime.today().strftime('%d/%m/%Y')
 
-    for index, row in spreadsheet.iterrows():
-        message += process_edicts(driver, row, message)
+        message = f'🎯 <b>EDITAIS COM ATUALIZAÇÃO EM {today}</b>'
 
-    if message != 'EDITAIS COM ATUALIZAÇÕES\n':
-        print(message.strip())
-    else:
-        print('Não houveram atualizações nos editais cadastrados.')
+        spreadsheet = pandas.read_csv(
+            f'./editais.csv',
+            delimiter=',',
+            dtype=str
+        )
 
-    spreadsheet.to_csv(f'./editais.csv', index=False)
-    driver.quit()    
+        for index, row in spreadsheet.iterrows():
+            message += process_edicts(driver, row)
 
-except Exception as e:
-    driver.quit()
-    logging.error(e)
+        if message.find('|') == -1:
+            message = f'⏳ <b>EDITAIS SEM ATUALIZAÇÃO EM {today}</b>\n\n<i>Não houveram atualizações nos editais cadastrados :(</i>'
+
+        spreadsheet.to_csv(f'./editais.csv', index=False)
+        telegram.send_updates(id, message)
+
+        logging.info('OK')
+
+    except Exception as error:
+        logging.critical(error)
+
+    finally:
+        driver.quit()
+
+load_dotenv()
+# telegram.get_updates(os.getenv('BOT-TOKEN'))
+scrap_routine(os.getenv('CHAT-ID'))
