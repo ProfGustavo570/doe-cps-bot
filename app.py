@@ -6,10 +6,13 @@ import pandas
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
+
 import telegram
+import time
 
 
 logging.basicConfig(
@@ -24,7 +27,7 @@ logging.basicConfig(
 def init_driver():
     if os.path.exists('/usr/bin/firefox'):
         options = FirefoxOptions()
-        options.add_argument('-headless')
+        # options.add_argument('-headless')
         driver = webdriver.Firefox(options=options)
         driver.implicitly_wait(10)
     else:
@@ -39,13 +42,19 @@ def init_driver():
 
 def process_edicts(driver, row):
     driver.get('https://www.doe.sp.gov.br/')
+    time.sleep(5)
+    if driver.find_element(By.CSS_SELECTOR, 'button.MuiButtonBase-root:nth-child(1)'):
+        driver.find_element(
+            By.CSS_SELECTOR,
+            'button.MuiButtonBase-root:nth-child(1)'
+        ).click()
+        time.sleep(3)
 
     input_search = '#search-input'
     btn_search = 'button.MuiButtonBase-root:nth-child(2)'
     txt_entry = '.css-8atqhb > div:nth-child(3)'
 
-    driver.find_element(By.CSS_SELECTOR, input_search).send_keys(
-        f'{row['EDITAL']}')
+    driver.find_element(By.CSS_SELECTOR, input_search).send_keys(f'{row['EDITAL']}')
     driver.find_element(By.CSS_SELECTOR, btn_search).click()
 
     if driver.find_elements(By.CSS_SELECTOR, txt_entry):
@@ -89,6 +98,7 @@ def scrap_routine(id):
 
     finally:
         driver.quit()
+
 
 load_dotenv()
 # telegram.get_updates(os.getenv('BOT-TOKEN'))
