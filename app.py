@@ -6,13 +6,11 @@ import pandas
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 
 import telegram
-import time
 
 
 logging.basicConfig(
@@ -27,7 +25,7 @@ logging.basicConfig(
 def init_driver():
     if os.path.exists('/usr/bin/firefox'):
         options = FirefoxOptions()
-        # options.add_argument('-headless')
+        options.add_argument('-headless')
         driver = webdriver.Firefox(options=options)
         driver.implicitly_wait(10)
     else:
@@ -41,30 +39,21 @@ def init_driver():
 
 
 def process_edicts(driver, row):
-    driver.get('https://www.doe.sp.gov.br/')
-    time.sleep(5)
-    if driver.find_element(By.CSS_SELECTOR, 'button.MuiButtonBase-root:nth-child(1)'):
-        driver.find_element(
-            By.CSS_SELECTOR,
-            'button.MuiButtonBase-root:nth-child(1)'
-        ).click()
-        time.sleep(3)
+    driver.get('https://www.doe.sp.gov.br/busca-avancada')
 
-    input_search = '#search-input'
-    btn_search = 'button.MuiButtonBase-root:nth-child(2)'
+    input_search = '.css-brmobe > input:nth-child(1)'
     txt_entry = '.css-8atqhb > div:nth-child(3)'
+    btn_confirm = 'button.MuiButton-root:nth-child(1)'
 
     driver.find_element(By.CSS_SELECTOR, input_search).send_keys(f'{row['EDITAL']}')
-    driver.find_element(By.CSS_SELECTOR, btn_search).click()
+    driver.find_element(By.CSS_SELECTOR, btn_confirm).click()
 
     if driver.find_elements(By.CSS_SELECTOR, txt_entry):
         abas_antes = driver.window_handles
         driver.find_element(By.CSS_SELECTOR, txt_entry).click()
         nova_aba = list(set(driver.window_handles) - set(abas_antes))[0]
         driver.switch_to.window(nova_aba)
-        row['ULTIMA_AT'] = datetime.today().strftime('%d/%m/%Y')
-        row['LINK'] = driver.current_url
-        return f'\n<b>{row['EDITAL']}</b> | <i>{row['MATERIA']}</i>'
+        return f'\n<b>{row['EDITAL']}</b> ({row['TIPO']})  |  <a href="{driver.current_url}"><i>{row['MATERIA']}</i></a>'
     else:
         return ''
 
@@ -90,8 +79,6 @@ def scrap_routine(id):
 
         spreadsheet.to_csv(f'./editais.csv', index=False)
         telegram.send_updates(id, message)
-
-        logging.info('OK')
 
     except Exception as error:
         logging.critical(error)
