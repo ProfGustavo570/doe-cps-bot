@@ -1,5 +1,11 @@
+doe/*.csv
+taxa/*
+!taxa/*.py
+!taxa/documentacao
+documentacao/*
+inscricao/*.pdf
 venv/
-__pycache__/
+__pycache__
 *.log
 *.csv
 .env
