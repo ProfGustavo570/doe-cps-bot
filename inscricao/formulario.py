@@ -90,7 +90,7 @@ pss = Formulario(
     input_taxa      = '',
     botao_taxa      = '',
 
-    check_1         = f'{BASE}PanelConfirmacoes > div:nth-child(3) > span',
+    check_1         = f'{BASE}chkAceitoNormas',
     check_2         = f'{BASE}chkCienteCondicoes',
     check_3         = f'{BASE}chkLGPD',
     check_4         = f'{BASE}chkResponsabilidade',

@@ -6,6 +6,6 @@ import inscricao.inscrever as inscrever
 import taxa.reducao as reducao
 
 load_dotenv()
-inscrever.inscrever_pss(edital='')
+# inscrever.inscrever_pss(edital='211/05/2026')
 diario.realizar_pesquisa(id=os.getenv('CHAT-ID'))
-reducao.enviar_mensagem(edital='', email='')
+# reducao.enviar_mensagem(edital='', email='')

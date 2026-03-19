@@ -46,7 +46,7 @@ def preencher(driver, selector, valor):
         try:
             elemento = css(driver, selector)
             elemento.send_keys(valor)
-            # time.sleep(0.5)
+            time.sleep(0.5)
             return
         except StaleElementReferenceException:
             if tentativa == 2:
@@ -58,7 +58,7 @@ def clicar(driver, selector):
     for tentativa in range(3):
         try:
             css(driver, selector).click()
-            # time.sleep(0.5)
+            time.sleep(0.5)
             return
         except StaleElementReferenceException:
             if tentativa == 2:

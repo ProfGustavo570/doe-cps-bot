@@ -20,7 +20,7 @@ def init_driver():
         driver.implicitly_wait(10)
     else:
         options = ChromeOptions()
-        options.add_argument('-headless')
+        # options.add_argument('-headless')
         driver = webdriver.Chrome(options=options)
         driver.implicitly_wait(10)
     return driver
@@ -31,10 +31,12 @@ def processar_editais(driver, row):
 
     input_pesquisa = '.css-brmobe > input:nth-child(1)'
     txt_entrada = '.css-8atqhb > div:nth-child(3)'
+    btn_pesquisar = 'button.MuiButton-root:nth-child(1)'
 
     driver.find_element(By.CSS_SELECTOR, input_pesquisa).send_keys(
         f'{row['EDITAL']}')
-    webdriver.ActionChains(driver).send_keys(Keys.RETURN).perform()
+    driver.find_element(By.CSS_SELECTOR, btn_pesquisar).click()
+
 
     if driver.find_elements(By.CSS_SELECTOR, txt_entrada):
         abas_antes = driver.window_handles
@@ -64,4 +66,4 @@ def realizar_pesquisa(id):
     if menssagem.find('|') == -1:
         menssagem = f'⏳ <b>EDITAIS SEM ATUALIZAÇÃO EM {hoje}</b>\n\n<i>Não houveram atualizações nos editais cadastrados :(</i>'
 
-    telegram.enviar_update(id, menssagem)
+    telegram.enviar_updates(id, menssagem)
