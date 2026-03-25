@@ -1,28 +1,18 @@
-import os
 from datetime import datetime
 
 import pandas
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-
 
 import doe.telegram as telegram
 
 
 def init_driver():
-    if os.path.exists('/usr/bin/firefox'):
-        options = FirefoxOptions()
-        options.add_argument('-headless')
-        driver = webdriver.Firefox(options=options)
-        driver.implicitly_wait(10)
-    else:
-        options = ChromeOptions()
-        # options.add_argument('-headless')
-        driver = webdriver.Chrome(options=options)
-        driver.implicitly_wait(10)
+    options = ChromeOptions()
+    options.add_argument('-headless')
+    driver = webdriver.Chrome(options=options)
+    driver.implicitly_wait(5)
     return driver
 
 
@@ -33,11 +23,11 @@ def processar_editais(driver, row):
     txt_entrada = '.css-8atqhb > div:nth-child(3)'
     btn_pesquisar = 'button.MuiButton-root:nth-child(1)'
 
-    driver.find_element(By.CSS_SELECTOR, input_pesquisa).send_keys(
-        f'{row['EDITAL']}')
+    driver.find_element(By.CSS_SELECTOR, input_pesquisa).send_keys(f'{row['EDITAL']}')
     driver.find_element(By.CSS_SELECTOR, btn_pesquisar).click()
 
-
+    print(f'{row['EDITAL']}: OK')
+    
     if driver.find_elements(By.CSS_SELECTOR, txt_entrada):
         abas_antes = driver.window_handles
         driver.find_element(By.CSS_SELECTOR, txt_entrada).click()

@@ -19,7 +19,7 @@ class Candidato:
     estado:         str
 
 
-candidato = Candidato(
+dados = Candidato(
     cpf=os.getenv('cpf'),
     nome=os.getenv('nome'),
     nascimento=os.getenv('nascimento'),

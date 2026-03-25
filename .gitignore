@@ -1,12 +1,8 @@
-doe/*.csv
-taxa/*
-!taxa/*.py
-!taxa/documentacao
-documentacao/*
-inscricao/*.pdf
+
 venv/
 __pycache__
 *.log
 *.csv
+*.pdf
 .env
-!template.csv
+crt.txt

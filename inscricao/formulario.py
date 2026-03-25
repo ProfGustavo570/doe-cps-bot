@@ -45,7 +45,7 @@ class Formulario:
     botao_confirmar:     str
 
 
-pss = Formulario(
+campos = Formulario(
     input_filtro    = f'{BASE}txtFiltro',
     botao_filtro    = f'{BASE}GridViewPSSFATECFiltro > tbody > tr:nth-child(2) > td:nth-child(2) > a',
     botao_inscrever = f'{BASE}linkbtnInscricaoAberta',
@@ -87,8 +87,8 @@ pss = Formulario(
     input_memo      = f'{BASE}flpMemorialInscricao',
     botao_memo      = f'{BASE}btnSubirMemorial',
 
-    input_taxa      = '',
-    botao_taxa      = '',
+    input_taxa      = f'{BASE}flpTaxaInscricao',
+    botao_taxa      = f'{BASE}btnFinalizar',
 
     check_1         = f'{BASE}chkAceitoNormas',
     check_2         = f'{BASE}chkCienteCondicoes',
