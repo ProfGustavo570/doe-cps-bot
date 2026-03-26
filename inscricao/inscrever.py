@@ -1,5 +1,6 @@
 import os
 import time
+import csv
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -56,7 +57,7 @@ def clicar(driver, selector):
             time.sleep(0.5)
 
 
-def realizar_inscricao(edital, tipo):
+def realizar_inscricao(edital, tipo, materia=''):
     driver = init_driver()
     dados = candidato
     form = campos
@@ -64,6 +65,7 @@ def realizar_inscricao(edital, tipo):
     driver.get(
         f'https://urhsistemas.cps.sp.gov.br/dgsdad/selecaopublica/ETEC/{tipo}/Abertos.aspx'
     )
+
     wait = WebDriverWait(driver, 10)
     time.sleep(1)
     webdriver.ActionChains(driver).send_keys(Keys.ESCAPE).perform()
@@ -79,6 +81,7 @@ def realizar_inscricao(edital, tipo):
     clicar(driver, form.botao_inscrever)
 
     # CPF
+    print(dados.cpf)
     preencher(driver, form.input_cpf, dados.cpf)
     webdriver.ActionChains(driver).send_keys(Keys.RETURN).perform()
     time.sleep(1)
@@ -126,10 +129,14 @@ def realizar_inscricao(edital, tipo):
 
     # Upload do memorial/taxa
     if tipo == 'PSS':
-        css(driver, form.input_memo).send_keys(os.path.abspath('./inscricao/Memorial.pdf'))
+        css(driver, form.input_memo).send_keys(
+            os.path.abspath('./inscricao/Memorial.pdf')
+        )
         clicar(driver, form.botao_memo)
     else:
-        css(driver, form.input_taxa).send_keys(os.path.abspath(f'./inscricao/comprovantes/{edital.replace('/', '-')}.pdf'))
+        css(driver, form.input_taxa).send_keys(
+            os.path.abspath(f'./inscricao/comprovantes/{edital.replace('/', '-')}.pdf')
+        )
         clicar(driver, form.botao_taxa)
     time.sleep(3)
 
@@ -142,5 +149,12 @@ def realizar_inscricao(edital, tipo):
     # Submeter
     clicar(driver, form.botao_confirmar)
     time.sleep(5)
+    
+    if not materia == '':
+        with open(
+            os.path.abspath('./doe/editais.csv'), 'a', newline='', encoding='utf-8'
+        ) as arquivo:
+            planilha = csv.writer(arquivo)
+            planilha.writerow([edital, True, tipo, materia, escola])
 
     driver.quit()

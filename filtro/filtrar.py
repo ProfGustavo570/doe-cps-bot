@@ -82,34 +82,40 @@ def filtrar_por_cidade(cidade, tipo):
 
     for item in range(len(cell_edital)):
         materia = cell_area[item].text.split(' - ')
+        sigla = ''.join(palavra[0].upper() for palavra in materia[1].split())
 
         with open(os.path.abspath('./filtro/crt.txt'), 'r') as crt:
             conteudo = crt.read()
 
+        with open(os.path.abspath('./doe/editais.csv'), 'r') as csv:
+            planilha = csv.read()
+
         if materia[1].upper() in conteudo:
             message = ''
+
+            if not cell_edital[item].text in planilha:            
+                escola = cell_escola[item].text.replace('Escola Técnica Estadual', 'Etec')
+                
+                if datetime.strptime(cell_inicio[item].text, '%d/%m/%y') < datetime.now():
+                    message += '[-- ABERTO --] '
+                else:
+                    message += '[** FECHADO **] '
+                
+                message += cell_edital[item].text + ' - '
+                message += escola + ' | '
+                message += materia[1]
             
-            if datetime.strptime(cell_inicio[item].text, '%d/%m/%y') < datetime.now():
-                message += '[-- ABERTO --] '
-            else:
-                message += '[** FECHADO **] '
-            
-            message += cell_edital[item].text + ' - '
-            message += cell_escola[item].text.replace('Escola Técnica Estadual', 'Etec') + ' | '
-            message += materia[1]
-        
-            print(message)
-            
-            if 'ABERTO' in message:
-                escolha = input('Deseja se inscrever neste edital (s/N): ')
-                if escolha.upper().find('S') >= 0:
-                    if tipo == 'PSS':
-                        print(f'🗳️ Realizando inscrição no Processo Nº{cell_edital[item].text}...')
-                    else:
-                        print(f'🗳️ Realizando inscrição no Concurso Nº{cell_edital[item].text}...')
-                    
-                    inscricao.realizar_inscricao(cell_edital[item].text, tipo)
-                    
+                print(message)
+                
+                if 'ABERTO' in message:
+                    escolha = input('Deseja se inscrever neste edital (s/N): ')
+                    if escolha.upper().find('S') >= 0:
+                        if tipo == 'PSS':
+                            print(f'🗳️ Realizando inscrição no Processo Nº{cell_edital[item].text}...')
+                        else:
+                            print(f'🗳️ Realizando inscrição no Concurso Nº{cell_edital[item].text}...')
+                        
+                    inscricao.realizar_inscricao(cell_edital[item].text, tipo, sigla)                        
                     print('✅ inscrição realizada com sucesso!')
 
     driver.quit()
