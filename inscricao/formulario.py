@@ -47,7 +47,7 @@ class Formulario:
 
 campos = Formulario(
     input_filtro    = f'{BASE}txtFiltro',
-    botao_filtro    = f'{BASE}GridViewPSSFATECFiltro > tbody > tr:nth-child(2) > td:nth-child(2) > a',
+    botao_filtro    = 'tbody > tr:nth-child(2) > td:nth-child(2) > a',
     botao_inscrever = f'{BASE}linkbtnInscricaoAberta',
 
     input_cpf       = f'{BASE}txtCPF',

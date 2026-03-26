@@ -81,7 +81,6 @@ def realizar_inscricao(edital, tipo, materia=''):
     clicar(driver, form.botao_inscrever)
 
     # CPF
-    print(dados.cpf)
     preencher(driver, form.input_cpf, dados.cpf)
     webdriver.ActionChains(driver).send_keys(Keys.RETURN).perform()
     time.sleep(1)
@@ -134,9 +133,6 @@ def realizar_inscricao(edital, tipo, materia=''):
         )
         clicar(driver, form.botao_memo)
     else:
-        css(driver, form.input_taxa).send_keys(
-            os.path.abspath(f'./inscricao/comprovantes/{edital.replace('/', '-')}.pdf')
-        )
         clicar(driver, form.botao_taxa)
     time.sleep(3)
 
@@ -155,6 +151,6 @@ def realizar_inscricao(edital, tipo, materia=''):
             os.path.abspath('./doe/editais.csv'), 'a', newline='', encoding='utf-8'
         ) as arquivo:
             planilha = csv.writer(arquivo)
-            planilha.writerow([edital, True, tipo, materia, escola])
+            planilha.writerow([edital, True, tipo, materia])
 
     driver.quit()
