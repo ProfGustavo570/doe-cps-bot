@@ -113,9 +113,9 @@ def filtrar_por_cidade(cidade, tipo):
                         if tipo == 'PSS':
                             print(f'🗳️ Realizando inscrição no Processo Nº{cell_edital[item].text}...')
                         else:
-                            print(f'🗳️ Realizando inscrição no Concurso Nº{cell_edital[item].text}...')
+                            print(f'🗳️ Realizando inscrição no Concurso Nº{cell_edital[item].text}...')                        
                         
-                    inscricao.realizar_inscricao(cell_edital[item].text, tipo, sigla)                        
-                    print('✅ inscrição realizada com sucesso!')
+                        inscricao.realizar_inscricao(cell_edital[item].text, tipo, sigla)                                
+                        print('✅ inscrição realizada com sucesso!')
 
     driver.quit()

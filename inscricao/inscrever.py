@@ -151,6 +151,9 @@ def realizar_inscricao(edital, tipo, materia=''):
             os.path.abspath('./doe/editais.csv'), 'a', newline='', encoding='utf-8'
         ) as arquivo:
             planilha = csv.writer(arquivo)
-            planilha.writerow([edital, True, tipo, materia])
+            if tipo == 'PSS':
+                planilha.writerow([edital, True, tipo, materia])
+            else:
+                planilha.writerow([edital, False, tipo, materia])
 
     driver.quit()
