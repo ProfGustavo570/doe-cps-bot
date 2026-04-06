@@ -1,5 +1,4 @@
 selenium
-pandas
 python-dotenv
 requests
 pypdf

@@ -64,7 +64,7 @@ while True:
             home_screen(escolha)
         
         elif escolha <= 3:
-            tipo = 'PSS' if escolha == 2 else 'CPD'
+            tipo: Literal['CPD', 'PSS'] = 'PSS' if escolha == 2 else 'CPD'
             cidade: str = input('Para prosseguir, digite o nome de uma cidade: ')
 
             print(f'🔍 Pesquisando na região de {cidade.upper()}...')

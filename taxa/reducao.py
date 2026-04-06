@@ -6,7 +6,7 @@ from pypdf import PdfReader, PdfWriter
 from email.message import EmailMessage
 
 
-def gerar_documento(edital):
+def gerar_documento(edital) -> None:
     reader = PdfReader('./taxa/formulario_empty.pdf')
     writer = PdfWriter()
     merger = PdfWriter()
@@ -24,7 +24,7 @@ def gerar_documento(edital):
 
     writer.write(buffer)
 
-    documentos = [
+    documentos: list[BytesIO | str] = [
         buffer,
         './taxa/declaracao.pdf',
         './taxa/desempregado.pdf',
@@ -38,10 +38,10 @@ def gerar_documento(edital):
         merger.write(file)
 
 
-def enviar_mensagem(edital, email):
+def enviar_mensagem(edital, email) -> None:
     gerar_documento(edital)
     
-    menssagem = f'''
+    menssagem: str = f'''
     Olá, espero que esta mensagem os encontre bem.
     <br><br>
     Venho por meio deste e-mail realizar a solicitação para redução da taxa de inscrição do edital <b>{edital}</b>.

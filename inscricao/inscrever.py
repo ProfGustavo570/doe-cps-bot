@@ -20,7 +20,7 @@ def init_driver():
     return driver
 
 
-def css(driver, selector, wait=10, tentativas=3):
+def css(driver, selector, wait=10, tentativas=3) -> WebElement | None:
     for tentativa in range(tentativas):
         try:
             return WebDriverWait(driver, wait).until(
@@ -32,7 +32,7 @@ def css(driver, selector, wait=10, tentativas=3):
             time.sleep(0.5)
 
 
-def preencher(driver, selector, valor):
+def preencher(driver, selector, valor) -> None:
     for tentativa in range(3):
         try:
             elemento = css(driver, selector)
@@ -45,7 +45,7 @@ def preencher(driver, selector, valor):
             time.sleep(0.5)
 
 
-def clicar(driver, selector):
+def clicar(driver, selector) -> None:
     for tentativa in range(3):
         try:
             css(driver, selector).click()
@@ -57,16 +57,16 @@ def clicar(driver, selector):
             time.sleep(0.5)
 
 
-def realizar_inscricao(edital, tipo, materia=''):
+def realizar_inscricao(edital, tipo, materia='') -> None:
     driver = init_driver()
-    dados = candidato
-    form = campos
+    dados: Candidato = candidato
+    form: Formulario = campos
 
     driver.get(
         f'https://urhsistemas.cps.sp.gov.br/dgsdad/selecaopublica/ETEC/{tipo}/Abertos.aspx'
     )
 
-    wait = WebDriverWait(driver, 10)
+    wait: WebDriverWait[Unknown] = WebDriverWait(driver, 10)
     time.sleep(1)
     webdriver.ActionChains(driver).send_keys(Keys.ESCAPE).perform()
 
@@ -150,7 +150,7 @@ def realizar_inscricao(edital, tipo, materia=''):
         with open(
             os.path.abspath('./doe/editais.csv'), 'a', newline='', encoding='utf-8'
         ) as arquivo:
-            planilha = csv.writer(arquivo)
+            planilha: Writer = csv.writer(arquivo)
             if tipo == 'PSS':
                 planilha.writerow([edital, True, tipo, materia])
             else:

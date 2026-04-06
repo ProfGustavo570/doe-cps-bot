@@ -16,14 +16,14 @@ import inscricao.inscrever as inscricao
 
 
 def init_driver():
-    options = ChromeOptions()
+    options: Options = ChromeOptions()
     options.add_argument('-headless')
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(10)
     return driver
 
 
-def css(driver, selector, wait=10, tentativas=3):
+def css(driver, selector, wait=10, tentativas=3) -> WebElement | None:
     for tentativa in range(tentativas):
         try:
             return WebDriverWait(driver, wait).until(
@@ -35,7 +35,7 @@ def css(driver, selector, wait=10, tentativas=3):
             time.sleep(0.5)
 
 
-def preencher(driver, selector, valor):
+def preencher(driver, selector, valor) -> None:
     for tentativa in range(3):
         try:
             elemento = css(driver, selector)
@@ -48,7 +48,7 @@ def preencher(driver, selector, valor):
             time.sleep(0.5)
 
 
-def clicar(driver, selector):
+def clicar(driver, selector) -> None:
     for tentativa in range(3):
         try:
             css(driver, selector).click()
@@ -60,9 +60,9 @@ def clicar(driver, selector):
             time.sleep(0.5)
 
 
-def filtrar_por_cidade(cidade, tipo):
+def filtrar_por_cidade(cidade, tipo) -> None:
     driver = init_driver()
-    tabela = formulario
+    tabela: Formulario = formulario
 
     driver.get(
         f'https://urhsistemas.cps.sp.gov.br/dgsdad/selecaopublica/ETEC/{tipo}/Abertos.aspx'
@@ -82,13 +82,13 @@ def filtrar_por_cidade(cidade, tipo):
 
     for item in range(len(cell_edital)):
         materia = cell_area[item].text.split(' - ')
-        sigla = ''.join(palavra[0].upper() for palavra in materia[1].split())
+        sigla: str = ''.join(palavra[0].upper() for palavra in materia[1].split())
 
         with open(os.path.abspath('./filtro/crt.txt'), 'r') as crt:
-            conteudo = crt.read()
+            conteudo: str = crt.read()
 
         with open(os.path.abspath('./doe/editais.csv'), 'r') as csv:
-            planilha = csv.read()
+            planilha: str = csv.read()
 
         if materia[1].upper() in conteudo:
             message = ''
@@ -108,7 +108,7 @@ def filtrar_por_cidade(cidade, tipo):
                 print(message)
                 
                 if 'ABERTO' in message:
-                    escolha = input('Deseja se inscrever neste edital (s/N): ')
+                    escolha: str = input('Deseja se inscrever neste edital (s/N): ')
                     if escolha.upper().find('S') >= 0:
                         if tipo == 'PSS':
                             print(f'🗳️ Realizando inscrição no Processo Nº{cell_edital[item].text}...')
